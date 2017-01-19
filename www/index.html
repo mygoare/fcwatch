@@ -31,15 +31,46 @@
         <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
+
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <!-- bootstrap -->
+        <link rel="stylesheet" href="css/bootstrap.css"/>
+        <!--rangeslider-->
+        <link rel="stylesheet" href="css/rangeslider.css">
+
+        <link rel="stylesheet" href="css/index.css">
         <title>Hello World</title>
     </head>
     <body>
-        <h1>
-            Main ui will be put here
-        </h1>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
+        <div class="app container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h6>Color:</h6>
+                    <input readonly id="colorPicker" class="jscolor" value="ab2567">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>On  delay: <span></span></h6>
+                    <input id="onSwitch" type="range">
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Off delay: <span></span></h6>
+                    <input id="offSwitch" type="range">
+                </div>
+            </div>
+        </div>
+        <script src="cordova.js"></script>
+        <!--jquery-->
+        <script src="js/jquery-3.1.1.js"></script>
+        <!-- jscolor -->
+        <script src="js/jscolor.js" charset="utf-8"></script>
+        <!--rangeslider-->
+        <script src="js/rangeslider.js"></script>
+
+        <script src="js/index.js"></script>
     </body>
 </html>

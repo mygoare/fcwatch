@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+
 var app = {
     // Application Constructor
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-
     },
 
     // deviceready Event Handler
@@ -28,6 +29,52 @@ var app = {
     // Bind any cordova events here. Common events are:
     // 'pause', 'resume', etc.
     onDeviceReady: function() {
+
+        var self = this;
+
+        var onSwitchSlideEnd = function (p, v) {
+            $span = this.$element.prev().find('span');
+            $span.html(v);
+            console.log('xxxxx onSwitchSlideEnd', v);
+        };
+
+        var offSwitchSlideEnd = function (p, v) {
+            $span = this.$element.prev().find('span');
+            $span.html(v);
+            console.log('xxxxx offSwitchSlideEnd', v);
+        };
+
+        // on, off switches
+        $('#onSwitch').rangeslider({
+            step: 5,
+            polyfill: false,
+            onSlideEnd: onSwitchSlideEnd
+        });
+        $('#offSwitch').rangeslider({
+            step: 5,
+            polyfill: false,
+            onSlideEnd: offSwitchSlideEnd
+        });
+
+
+        var fn = function(event) {
+
+            var reg = /rgb\((\d+), (\d+), (\d+)\)/;
+            var rgbColorArr = event.target.style.backgroundColor.match(reg);
+
+            var color = {};
+            color.red   = rgbColorArr[1];
+            color.green = rgbColorArr[2];
+            color.blue  = rgbColorArr[3];
+
+            self.onSetRGB(color);
+        };
+
+        // color picker
+        $('#colorPicker').on('change', fn);
+
+
+
         ble.scan([], app.onScanSuccess, app.onError);
     },
     onScanSuccess: function(device)
@@ -86,6 +133,7 @@ var app = {
         console.log(reason);
     },
     onSetRGB: function(color){
+        console.log('test onSetRGB', color);
         // color
         // {
         //     red: 10,
