@@ -29,6 +29,47 @@ function stringToBytes(string) {
     return array.buffer;
 }
 
+function hexToRgbA(hex){
+    var c;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+        c= hex.substring(1).split('');
+        if(c.length== 3){
+            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c= '0x'+c.join('');
+        return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',1)';
+    }
+    throw new Error('Bad Hex');
+}
+
+var colorTables = [
+    {
+        name: '红色',
+        hex: '#c4272d'
+    },
+    {
+        name: '绿色',
+        hex: '#93EAA3'
+    },
+    {
+        name: '蓝色',
+        hex: '#227eaf'
+    },
+    {
+        name: '橙色',
+        hex: '#f6bd1f'
+    },
+    {
+        name: '黄色',
+        hex: '#f8ef98'
+    },
+    {
+        name: '紫色',
+        hex: '#8b80ff'
+    }
+];
+
+
 // this is RedBear Lab's UART service
 var redbear = {
     serviceUUID: "713D0000-503E-4C75-BA94-3148F18D941E",
@@ -36,11 +77,167 @@ var redbear = {
     rxCharacteristic: "713D0002-503E-4C75-BA94-3148F18D941E" // receive is from the phone's perspective
 };
 
+var fc = {};
+var $$ = Dom7;
+var myApp = new Framework7();
+
+// start app
+var startApp = function() {
+    var self = this;
+
+
+
+    var mainView = myApp.addView('.view-main', {
+        dynamicNavbar: true
+    });
+
+    fc.mainView = mainView;
+
+
+    myApp.onPageInit('scan-devices-list', function(page){
+        console.log('xxxxxxxx', 'scan-devices-list initialized', page);
+
+        // insert li.swipe-out lists template
+        // fill with devices data
+
+        var devicesCount = page.query.devicesCount;
+        var devicesData  = page.query.devicesData;
+
+        var listHtml = '<ul>';
+
+        for (var i = 0; i < devicesCount; i++) {
+            var liHtml =
+                '<li class="swipeout">' +
+                    '<div class="swipeout-content item-content">' +
+                    '<div class="item-inner">' +
+                    '<div class="item-title-row">' +
+                    '<div class="item-title">' +
+                    devicesData[i].name +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="item-subtitle">' +
+                    devicesData[i].id +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="swipeout-actions-right">' +
+                    '<a href="#" class="setting-action bg-orange">' +
+                    '设置' +
+                    '</a>' +
+                    '</div>' +
+                '</li>';
+            listHtml += liHtml
+        }
+
+        listHtml += '</ul>';
+
+        $$(page.container).find('.list-block.media-list').append(listHtml);
+
+        $$('.setting-action').on('click', function(event){
+            /*
+            1. connect the device
+            2. do settings (color, blink)
+             */
+
+            //var deviceId;
+            //self.onConnectDevice(deviceId, self.onSetColorAndBlink, self.onError);
+            self.onSetColorAndBlink();
+
+        });
+        $$('.group-action').on('click', function(event){
+            /*
+            1. connect the device
+            2. do grouping
+             */
+
+            var deviceId;
+            self.onConnectDevice(deviceId, self.onCreateGroup(), self.onError);
+        });
+    });
+
+    myApp.onPageInit('set-color-and-blink', function(){
+
+        var values = colorTables.map(function(val, i){return val.hex});
+        var displayValues = colorTables.map(function(val, i){return val.name});
+
+        var colorPicker = myApp.picker({
+            input: '#color-picker-input',
+            cols: [
+                {
+                    textAlign: 'center',
+                    values:         values,
+                    displayValues:  displayValues
+                }
+            ]
+        });
+
+        $$('.cancelColorBlinkBtn').on('click', function(){
+            // go back
+            fc.mainView.router.back();
+        });
+
+        $$('.setColorBlinkBtn').on('click', function(){
+            // set color and blink, trigger oncolorAndBlinkPicked event
+
+            // 1. get data
+
+            // {
+            //     red: 100,
+            //     green: 200,
+            //     blue: 30,
+            //     on: 1, //1 unit = 0.1s
+            //     off: 1
+            // }
+
+            var colorHex;
+            var onDuration, offDuration;
+
+            colorHex =    $$('#color-picker-input').val();
+            onDuration =  $$('#blink-on-input').val();
+            offDuration = $$('#blink-off-input').val();
+
+
+            var colorRGBA = hexToRgbA(colorHex);
+            var o = {};
+
+            var reg = /rgba\((\d+),(\d+),(\d+),1\)/;
+            var colorRGBArr = colorRGBA.match(reg);
+
+            o['red'] = parseInt(colorRGBArr[1]);
+            o['green'] = parseInt(colorRGBArr[2]);
+            o['blue'] = parseInt(colorRGBArr[3]);
+            o['on'] = parseInt(onDuration);
+            o['off'] = parseInt(offDuration);
+
+
+
+            console.log('xxxxxxxx', o);
+            //self.oncolorAndBlinkPicked(o);
+
+
+            // go back (模拟，需要回调)
+            fc.mainView.router.back();
+        });
+    });
+
+    var bindScanBtn = function(){
+        // 扫描蓝牙手环
+        $('#scanBtn').on('click', self.onBeginToScan);
+
+    };
+
+
+    myApp.onPageInit('scan', bindScanBtn);
+
+    bindScanBtn();
+
+};
+
 var app = {
     /***************************** app local data ***********************************/
     localData: {
         myDeviceID: 0
-    }
+    },
     // Application Constructor
     initialize: function() {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
@@ -49,56 +246,49 @@ var app = {
     // deviceready Event Handler
     onDeviceReady: function() {
 
-        var self = this;
 
-        var onSwitchSlideEnd = function(p, v) {
-            $span = this.$element.prev().find('span');
-            $span.html(v);
-            console.log('xxxxx onSwitchSlideEnd', v);
-        };
-
-        var offSwitchSlideEnd = function(p, v) {
-            $span = this.$element.prev().find('span');
-            $span.html(v);
-            console.log('xxxxx offSwitchSlideEnd', v);
-        };
-
-        // on, off switches
-        $('#onSwitch').rangeslider({
-            step: 5,
-            polyfill: false,
-            onSlideEnd: onSwitchSlideEnd
-        });
-        $('#offSwitch').rangeslider({
-            step: 5,
-            polyfill: false,
-            onSlideEnd: offSwitchSlideEnd
-        });
+        startApp.call(this);
 
 
-        var fn = function(event) {
-
-            var reg = /rgb\((\d+), (\d+), (\d+)\)/;
-            var rgbColorArr = event.target.style.backgroundColor.match(reg);
-
-            var color = {};
-            color.red = rgbColorArr[1];
-            color.green = rgbColorArr[2];
-            color.blue = rgbColorArr[3];
-
-            self.oncolorAndBlinkPicked(color);
-        };
-
-        // color picker
-        $('#colorPicker').on('change', fn);
     },
     //on scan button clicked
     onBeginToScan: function() 
     {
-        ble.scan([], 5, app.onFindDevice, app.onError);
+        //ble.scan([], 5, app.onFindDevice, app.onError);
+        myApp.showPreloader('查找设备中...');
+
+        setTimeout(function(){
+            myApp.hidePreloader();
+            app.onFindDevice();
+        }, 1000);
     },
     //on find a device, add the device to device list UI
-    onFindDevice: function(device) {
+    onFindDevice: function(devices) {
+
+        // sample devices data
+        var devices = [
+            {
+                name: 'Goare',
+                id: '123456789'
+            },
+            {
+                name: 'GGGGGOOOO',
+                id: '0987654321'
+            }
+        ];
+
+        // should be array of devices
+        console.log('xxxxxxxx', "scan devices list html");
+
+        // render with devices data, it is an array
+        fc.mainView.router.load({
+            url: 'scan-devices-list.html',
+            query: {
+                devicesCount: devices.length,
+                devicesData : devices
+            }
+        });
+
         //device is json like data structure ex:
         // {
         //     "name": "TI SensorTag",
@@ -107,23 +297,37 @@ var app = {
         //     "advertising": /* ArrayBuffer or map */
         // }
         //add it to a list, waitting for being clicked
+
+        // show a list of devices view here
+        // click one of them, then trigger onConnectDevice event
     },
-    onConnectDevice: function(id)
+    onConnectDevice: function(id, onSuccess, onError)
     {
         app.localData.myDeviceID = id;
-        ble.connect(id, app.onConnectSuccess, app.onError);
+        ble.connect(id, onSuccess, onError);
     },
-    onConnectSuccess: function()
-    {
-        //tell user connected;
-        //show create a group or set color and blink time windows
-    },
+    //onConnectSuccess: function()
+    //{
+    //
+    //    // two options:
+    //    // one is set the color and the time of on/off
+    //    // another is set group, hold
+    //
+    //    //tell user connected;
+    //    //show create a group or set color and blink time windows
+    //},
+
     onSetColorAndBlink: function()
     {
-        //open color and blink set pannel
+        //open color and blink set panel
+
+        fc.mainView.router.loadPage('set-color-and-blink.html');
+
+
     },
     oncolorAndBlinkPicked: function(data)
     {
+        console.log('xxxxxxxx', data);
         // data:
         // {
         //     red: 100,
@@ -144,7 +348,8 @@ var app = {
         // ble.writeWithoutResponse(deviceId, redbear.serviceUUID, redbear.txCharacteristic, data.buffer, app.onSendSuccess, app.onError);
 
     },
-    onCreatGroup: function() 
+
+    onCreateGroup: function()
     {
         //获取当前组群信息中 UI 等待
         var groupInfo = app.getDeviceGroupInfo();
@@ -199,7 +404,15 @@ var app = {
     },
     onScanGroupMembersSuccess: function(device)
     {
+        // {
+        //     "name": "TI SensorTag",
+        //     "id": "BD922605-1B07-4D55-8D09-B66653E51BBA",
+        //     "rssi": -79,
+        //     "advertising": /* ArrayBuffer or map */
+        // }
         //list the devices by side
+
+        // 调用 onStopScan
     },
     onStopScan: function()
     {   
@@ -208,7 +421,8 @@ var app = {
         }, app.onError)
     },
     onSendGroupInfoToDevice: function(group)
-    {  
+    {
+
         //send device to fc watch
     },
     onError: function(reason) {

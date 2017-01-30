@@ -1,0 +1,75 @@
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="center">Settings</div>
+    </div>
+</div>
+<div class="pages navbar-through">
+    <div class="page" data-page="set-color-and-blink">
+        <div class="page-content">
+                <div class="content-block-title">Color Picker</div>
+                <div class="list-block">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-input">
+                                        <input type="text" placeholder="Pick the color" readonly id="color-picker-input" value="#c4272d">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="content-block-title">On duration</div>
+                <div class="list-block">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-input">
+                                        <div class="range-slider">
+                                            <input id="blink-on-input" type="range" min="0" max="1000" step="20">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="content-block-title">Off duration</div>
+                <div class="list-block">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-input">
+                                        <div class="range-slider">
+                                            <input id="blink-off-input" type="range" min="0" max="1000" step="20">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+
+
+            <div class="content-block">
+                <div class="row">
+                    <div class="col-50">
+                        <a href="#" class="button button-big button-red cancelColorBlinkBtn">Cancel</a>
+                    </div>
+                    <div class="col-50">
+                        <a href="#" class="button button-big button-green setColorBlinkBtn">Submit</a>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
