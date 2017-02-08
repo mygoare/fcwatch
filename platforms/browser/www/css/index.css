@@ -1,5 +1,6 @@
-#colorPicker {
-    border: none;
-    cursor: default;
-    text-align: center;
+.range-slider input[type="range"]::-webkit-slider-thumb {
+    border: 1px solid silver;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
