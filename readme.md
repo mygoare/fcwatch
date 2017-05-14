@@ -10,6 +10,8 @@ cordova platform add ios
 cordova run ios
 
 
-## run emulator with the specific ios images
+__run emulator with the specific ios images__
+
 cordova emulate ios --list
+
 cordova emulate ios --target="iPhone-4s, 9.3"
